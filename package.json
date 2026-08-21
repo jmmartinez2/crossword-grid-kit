@@ -1,0 +1,20 @@
+{
+  "name": "crossword-grid-kit",
+  "version": "0.1.0",
+  "description": "Parse and validate crossword grid text with precise, compiler-style error messages.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "crossword",
+    "grid",
+    "parser"
+  ],
+  "license": "MIT",
+  "author": "jmmartinez2"
+}
