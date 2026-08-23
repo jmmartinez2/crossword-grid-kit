@@ -59,6 +59,30 @@ Numbering follows the usual crossword rule: scan the grid left to right,
 top to bottom, and assign the next number to any open square that starts
 an across entry or a down entry (a run of two or more open squares).
 
+## Entries
+
+`entries()` extracts every across and down word as a `GridEntry`: its
+clue number, direction, starting square, length, the list of squares it
+covers, and the current text of those squares (pre-filled letters, or
+`.` for squares that are still blank).
+
+```ts
+grid.acrossEntries()[0];
+// {
+//   number: 1,
+//   direction: 'across',
+//   row: 0,
+//   col: 0,
+//   length: 2,
+//   cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }],
+//   text: '..',
+// }
+```
+
+`acrossEntries()` and `downEntries()` filter `entries()` down to one
+direction; all three return entries in the same order the grid is
+numbered in.
+
 ## Error messages
 
 A malformed grid throws a `CrosswordSyntaxError`. Its `message` already
@@ -87,9 +111,9 @@ example) instead of printing the default message.
 
 ## What's not here yet
 
-This is an early skeleton. There's no extraction of individual across/down
-entries as words yet, no symmetry checking, and no import or export to
-other puzzle formats. See the roadmap for what's planned.
+There's no symmetry checking, no validation of minimum entry length or
+two-letter words, and no import or export to other puzzle formats (ipuz,
+for a start) yet.
 
 ## License
 

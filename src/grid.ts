@@ -1,6 +1,21 @@
 import { CrosswordSyntaxError } from './errors';
 
 /**
+ * One across or down word: the squares it covers, in order from its
+ * starting (numbered) square, and the text those squares currently hold.
+ * Open squares that have no pre-filled letter show up as `.` in `text`.
+ */
+export interface GridEntry {
+  readonly number: number;
+  readonly direction: 'across' | 'down';
+  readonly row: number;
+  readonly col: number;
+  readonly length: number;
+  readonly cells: ReadonlyArray<{ readonly row: number; readonly col: number }>;
+  readonly text: string;
+}
+
+/**
  * A parsed crossword grid: a rectangular block of open squares (`.`),
  * blocked squares (`#`), and optionally pre-filled letters (`A`-`Z`).
  */
@@ -9,12 +24,14 @@ export class Grid {
   readonly height: number;
   private readonly cells: string[][];
   private readonly numbers: (number | null)[][];
+  private readonly entryList: GridEntry[];
 
   constructor(cells: string[][]) {
     this.height = cells.length;
     this.width = cells.length > 0 ? cells[0].length : 0;
     this.cells = cells;
     this.numbers = numberEntries(cells);
+    this.entryList = buildEntries(cells, this.numbers);
   }
 
   isBlock(row: number, col: number): boolean {
@@ -39,6 +56,21 @@ export class Grid {
 
   toText(): string {
     return this.cells.map((row) => row.join('')).join('\n');
+  }
+
+  /** Every across and down entry, in numbering order (across before down at a shared number). */
+  entries(): readonly GridEntry[] {
+    return this.entryList;
+  }
+
+  /** Just the across entries, in numbering order. */
+  acrossEntries(): readonly GridEntry[] {
+    return this.entryList.filter((entry) => entry.direction === 'across');
+  }
+
+  /** Just the down entries, in numbering order. */
+  downEntries(): readonly GridEntry[] {
+    return this.entryList.filter((entry) => entry.direction === 'down');
   }
 
   private cellAt(row: number, col: number): string {
@@ -82,6 +114,65 @@ function numberEntries(cells: string[][]): (number | null)[][] {
   }
 
   return numbers;
+}
+
+/**
+ * Walk the grid in the same order as numberEntries and, at each numbered
+ * square, pull out the across and/or down word that starts there.
+ */
+function buildEntries(cells: string[][], numbers: (number | null)[][]): GridEntry[] {
+  const height = cells.length;
+  const width = height > 0 ? cells[0].length : 0;
+  const entries: GridEntry[] = [];
+
+  for (let row = 0; row < height; row++) {
+    for (let col = 0; col < width; col++) {
+      if (cells[row][col] === '#') continue;
+
+      const number = numbers[row][col];
+      if (number === null) continue;
+
+      const leftIsEdgeOrBlock = col === 0 || cells[row][col - 1] === '#';
+      const rightIsOpen = col + 1 < width && cells[row][col + 1] !== '#';
+      if (leftIsEdgeOrBlock && rightIsOpen) {
+        entries.push(readEntry(cells, number, 'across', row, col, width, height));
+      }
+
+      const topIsEdgeOrBlock = row === 0 || cells[row - 1][col] === '#';
+      const bottomIsOpen = row + 1 < height && cells[row + 1][col] !== '#';
+      if (topIsEdgeOrBlock && bottomIsOpen) {
+        entries.push(readEntry(cells, number, 'down', row, col, width, height));
+      }
+    }
+  }
+
+  return entries;
+}
+
+function readEntry(
+  cells: string[][],
+  number: number,
+  direction: 'across' | 'down',
+  row: number,
+  col: number,
+  width: number,
+  height: number
+): GridEntry {
+  const positions: { row: number; col: number }[] = [];
+  let r = row;
+  let c = col;
+  while (r < height && c < width && cells[r][c] !== '#') {
+    positions.push({ row: r, col: c });
+    if (direction === 'across') {
+      c += 1;
+    } else {
+      r += 1;
+    }
+  }
+
+  const text = positions.map(({ row: pr, col: pc }) => cells[pr][pc]).join('');
+
+  return { number, direction, row, col, length: positions.length, cells: positions, text };
 }
 
 const OPEN = '.';
