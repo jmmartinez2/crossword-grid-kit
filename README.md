@@ -83,6 +83,27 @@ grid.acrossEntries()[0];
 direction; all three return entries in the same order the grid is
 numbered in.
 
+## Symmetry
+
+`isSymmetric()` checks the grid's block pattern for standard 180-degree
+rotational symmetry: square `(row, col)` is blocked if and only if square
+`(height-1-row, width-1-col)` is blocked. This only looks at where the `#`
+squares are, not at any pre-filled letters.
+
+```ts
+grid.isSymmetric(); // false for a grid whose blocks don't rotate onto themselves
+```
+
+`symmetryViolations()` returns the squares responsible, one per broken
+pair (the earlier square in reading order), so a caller can report where
+the grid needs fixing instead of just that it's broken:
+
+```ts
+grid.symmetryViolations();
+// [{ row: 0, col: 4 }] - this square is a block but its rotational
+// partner at (height-1, width-5) is open, or vice versa
+```
+
 ## Error messages
 
 A malformed grid throws a `CrosswordSyntaxError`. Its `message` already
@@ -111,9 +132,8 @@ example) instead of printing the default message.
 
 ## What's not here yet
 
-There's no symmetry checking, no validation of minimum entry length or
-two-letter words, and no import or export to other puzzle formats (ipuz,
-for a start) yet.
+There's no validation of minimum entry length or two-letter words, and no
+import or export to other puzzle formats (ipuz, for a start) yet.
 
 ## License
 

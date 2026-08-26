@@ -73,6 +73,41 @@ export class Grid {
     return this.entryList.filter((entry) => entry.direction === 'down');
   }
 
+  /**
+   * Whether the grid's block pattern has standard 180-degree rotational
+   * symmetry: the square at (row, col) is blocked if and only if the square
+   * at (height-1-row, width-1-col) is blocked. This is the convention
+   * American-style crosswords are built to; it says nothing about letters,
+   * only about where the black squares sit.
+   */
+  isSymmetric(): boolean {
+    return this.symmetryViolations().length === 0;
+  }
+
+  /**
+   * The squares that break 180-degree rotational symmetry, if any. Each
+   * entry is the square earlier in reading order of a pair whose
+   * block/open status doesn't match its rotational partner, so a grid with
+   * n broken pairs reports n violations rather than 2n.
+   */
+  symmetryViolations(): ReadonlyArray<{ row: number; col: number }> {
+    const violations: { row: number; col: number }[] = [];
+
+    for (let row = 0; row < this.height; row++) {
+      for (let col = 0; col < this.width; col++) {
+        const pairRow = this.height - 1 - row;
+        const pairCol = this.width - 1 - col;
+        if (row > pairRow || (row === pairRow && col > pairCol)) continue;
+
+        if (this.isBlock(row, col) !== this.isBlock(pairRow, pairCol)) {
+          violations.push({ row, col });
+        }
+      }
+    }
+
+    return violations;
+  }
+
   private cellAt(row: number, col: number): string {
     const cell = this.cells[row]?.[col];
     if (cell === undefined) {
