@@ -104,6 +104,29 @@ grid.symmetryViolations();
 // partner at (height-1, width-5) is open, or vice versa
 ```
 
+## Entry length
+
+`hasValidEntryLengths()` checks that every entry meets the standard
+crossword floor of three letters — most outlets don't count a two-letter
+run as a real word, so it's usually a sign of a block placed one square
+off from where it should be:
+
+```ts
+grid.hasValidEntryLengths(); // false if any entry is 1 or 2 squares long
+```
+
+`shortEntries()` returns the offending entries themselves, so a caller
+can point at exactly which word is too short instead of just flagging
+the grid:
+
+```ts
+grid.shortEntries();
+// [{ number: 4, direction: 'down', row: 0, col: 3, length: 2, ... }]
+```
+
+Both accept an optional `minLength` (default `3`) for callers with a
+stricter house style.
+
 ## Error messages
 
 A malformed grid throws a `CrosswordSyntaxError`. Its `message` already
@@ -132,8 +155,8 @@ example) instead of printing the default message.
 
 ## What's not here yet
 
-There's no validation of minimum entry length or two-letter words, and no
-import or export to other puzzle formats (ipuz, for a start) yet.
+There's no import or export to other puzzle formats (ipuz, for a start)
+yet, and no way to check a filled-in grid against an answer key.
 
 ## License
 

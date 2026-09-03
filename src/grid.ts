@@ -108,6 +108,20 @@ export class Grid {
     return violations;
   }
 
+  /**
+   * Entries shorter than `minLength` (default 3, the standard crossword
+   * floor — a two-letter entry isn't considered a real word by most
+   * outlets). Returned in the same order as `entries()`.
+   */
+  shortEntries(minLength = MIN_ENTRY_LENGTH): readonly GridEntry[] {
+    return this.entryList.filter((entry) => entry.length < minLength);
+  }
+
+  /** Whether every entry meets `minLength` (default 3). */
+  hasValidEntryLengths(minLength = MIN_ENTRY_LENGTH): boolean {
+    return this.shortEntries(minLength).length === 0;
+  }
+
   private cellAt(row: number, col: number): string {
     const cell = this.cells[row]?.[col];
     if (cell === undefined) {
@@ -212,6 +226,7 @@ function readEntry(
 
 const OPEN = '.';
 const BLOCK = '#';
+const MIN_ENTRY_LENGTH = 3;
 
 function isValidCellChar(ch: string): boolean {
   return ch === OPEN || ch === BLOCK || (ch >= 'A' && ch <= 'Z');
