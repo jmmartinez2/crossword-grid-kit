@@ -127,6 +127,47 @@ grid.shortEntries();
 Both accept an optional `minLength` (default `3`) for callers with a
 stricter house style.
 
+## ipuz import and export
+
+`toIpuz()` and `fromIpuz()` convert between a `Grid` and the
+[ipuz](http://www.ipuz.org/) crossword interchange format, so a grid can
+round-trip through the JSON documents most crossword software reads and
+writes.
+
+```ts
+import { parseGrid, toIpuz, fromIpuz } from 'crossword-grid-kit';
+
+const grid = parseGrid('..#..\n.....\n#...#\n.....\n..#..');
+
+const document = toIpuz(grid, { title: 'Sample Puzzle', author: 'jmmartinez2' });
+// { version: 'http://ipuz.org/v2', kind: ['http://ipuz.org/crossword#1'],
+//   dimensions: { width: 5, height: 5 }, puzzle: [...], title: ..., author: ... }
+
+fromIpuz(document).toText() === grid.toText(); // true
+```
+
+`toIpuz()` only includes a `solution` field if the grid has at least one
+pre-filled letter — an all-open grid has nothing to record there. Clue
+text isn't something `Grid` tracks, so pass it in separately if you have
+it:
+
+```ts
+toIpuz(grid, {
+  clues: {
+    across: new Map([[1, 'Like some cheese']]),
+    down: new Map([[1, 'Not odd']]),
+  },
+});
+```
+
+`fromIpuz()` accepts either a JSON string or an already-parsed object,
+and throws an `IpuzFormatError` if the document isn't a crossword (wrong
+`kind`), its shape doesn't match its declared `dimensions`, or a cell
+uses something other than the plain `"#"` / number / letter forms this
+library writes itself. ipuz also allows styled cell objects (for circles,
+shading, and so on); those aren't supported, so a document that uses them
+is rejected rather than silently misread.
+
 ## Error messages
 
 A malformed grid throws a `CrosswordSyntaxError`. Its `message` already
@@ -155,8 +196,7 @@ example) instead of printing the default message.
 
 ## What's not here yet
 
-There's no import or export to other puzzle formats (ipuz, for a start)
-yet, and no way to check a filled-in grid against an answer key.
+There's no way yet to check a filled-in grid against an answer key.
 
 ## License
 
