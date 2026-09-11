@@ -16,6 +16,19 @@ export interface GridEntry {
 }
 
 /**
+ * A single square where a grid disagrees with an answer key: either the
+ * block pattern doesn't line up, or an open square holds the wrong letter
+ * (or none yet). `expected` and `actual` are `#` for a block, `.` for an
+ * open square with no letter, or the letter in question.
+ */
+export interface SolutionMismatch {
+  readonly row: number;
+  readonly col: number;
+  readonly expected: string;
+  readonly actual: string;
+}
+
+/**
  * A parsed crossword grid: a rectangular block of open squares (`.`),
  * blocked squares (`#`), and optionally pre-filled letters (`A`-`Z`).
  */
@@ -120,6 +133,57 @@ export class Grid {
   /** Whether every entry meets `minLength` (default 3). */
   hasValidEntryLengths(minLength = MIN_ENTRY_LENGTH): boolean {
     return this.shortEntries(minLength).length === 0;
+  }
+
+  /**
+   * The squares where this grid disagrees with a fully solved answer key
+   * of the same dimensions: a block pattern mismatch, an open square
+   * that's still blank, or a filled-in letter that doesn't match. Empty
+   * if the grid is completely and correctly solved.
+   */
+  solutionMismatches(answerKey: Grid): readonly SolutionMismatch[] {
+    if (answerKey.width !== this.width || answerKey.height !== this.height) {
+      throw new RangeError(
+        `answer key is ${answerKey.height}x${answerKey.width}, but grid is ${this.height}x${this.width}`
+      );
+    }
+
+    const mismatches: SolutionMismatch[] = [];
+
+    for (let row = 0; row < this.height; row++) {
+      for (let col = 0; col < this.width; col++) {
+        const expectedBlock = answerKey.isBlock(row, col);
+        const actualBlock = this.isBlock(row, col);
+
+        if (expectedBlock !== actualBlock) {
+          mismatches.push({
+            row,
+            col,
+            expected: expectedBlock ? BLOCK : answerKey.letterAt(row, col) ?? OPEN,
+            actual: actualBlock ? BLOCK : this.letterAt(row, col) ?? OPEN,
+          });
+          continue;
+        }
+
+        if (expectedBlock) continue;
+
+        const expectedLetter = answerKey.letterAt(row, col) ?? OPEN;
+        const actualLetter = this.letterAt(row, col) ?? OPEN;
+        if (expectedLetter !== actualLetter) {
+          mismatches.push({ row, col, expected: expectedLetter, actual: actualLetter });
+        }
+      }
+    }
+
+    return mismatches;
+  }
+
+  /**
+   * Whether this grid is completely filled in and matches the given
+   * answer key, square for square.
+   */
+  matchesSolution(answerKey: Grid): boolean {
+    return this.solutionMismatches(answerKey).length === 0;
   }
 
   private cellAt(row: number, col: number): string {

@@ -168,6 +168,30 @@ library writes itself. ipuz also allows styled cell objects (for circles,
 shading, and so on); those aren't supported, so a document that uses them
 is rejected rather than silently misread.
 
+## Checking a solution
+
+`solutionMismatches()` compares a grid against a fully solved answer key
+of the same dimensions, square by square, and returns every square where
+they disagree — a block pattern mismatch, a square that's still blank, or
+a letter that's simply wrong:
+
+```ts
+const answerKey = parseGrid('CAT\nARE\nTEN');
+const attempt = parseGrid('CAT\nARE\nTEO');
+
+attempt.solutionMismatches(answerKey);
+// [{ row: 2, col: 2, expected: 'N', actual: 'O' }]
+```
+
+`matchesSolution()` is the same check collapsed to a boolean:
+
+```ts
+attempt.matchesSolution(answerKey); // false
+```
+
+Both throw a `RangeError` if the answer key isn't the same width and
+height as the grid being checked.
+
 ## Error messages
 
 A malformed grid throws a `CrosswordSyntaxError`. Its `message` already
@@ -193,10 +217,6 @@ unexpected character 'x' (expected '.', '#', or a letter A-Z)
 The error also carries `line` and `column` as plain numbers, for callers
 that want to build their own reporting (an editor gutter marker, for
 example) instead of printing the default message.
-
-## What's not here yet
-
-There's no way yet to check a filled-in grid against an answer key.
 
 ## License
 
