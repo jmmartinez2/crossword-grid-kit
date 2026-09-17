@@ -218,6 +218,11 @@ The error also carries `line` and `column` as plain numbers, for callers
 that want to build their own reporting (an editor gutter marker, for
 example) instead of printing the default message.
 
+## Development
+
+`npm test` compiles the library and runs the test suite with Node's built-in
+test runner (`node --test`). There's no separate test dependency to install.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
