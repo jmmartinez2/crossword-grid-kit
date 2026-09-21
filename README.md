@@ -192,6 +192,26 @@ attempt.matchesSolution(answerKey); // false
 Both throw a `RangeError` if the answer key isn't the same width and
 height as the grid being checked.
 
+`formatMismatches()` renders a list of mismatches as compiler-style
+diagnostics, one block per mismatch, in the same style a `CrosswordSyntaxError`
+uses for parse errors — a snippet of the offending row with a caret under the
+column in question:
+
+```ts
+import { formatMismatches } from 'crossword-grid-kit';
+
+console.log(formatMismatches(attempt, attempt.solutionMismatches(answerKey)));
+```
+
+```
+row 3, column 3
+3 | TEO
+      ^
+expected 'N', got 'O'
+```
+
+It returns `'no mismatches'` if the list is empty.
+
 ## Error messages
 
 A malformed grid throws a `CrosswordSyntaxError`. Its `message` already
