@@ -62,9 +62,8 @@ export class Grid {
    * or down entry. Squares in the middle of a word have no number.
    */
   numberAt(row: number, col: number): number | undefined {
-    const rowNumbers = this.numbers[row];
-    const value = rowNumbers ? rowNumbers[col] : undefined;
-    return value ?? undefined;
+    this.assertInBounds(row, col);
+    return this.numbers[row][col] ?? undefined;
   }
 
   toText(): string {
@@ -187,11 +186,14 @@ export class Grid {
   }
 
   private cellAt(row: number, col: number): string {
-    const cell = this.cells[row]?.[col];
-    if (cell === undefined) {
+    this.assertInBounds(row, col);
+    return this.cells[row][col];
+  }
+
+  private assertInBounds(row: number, col: number): void {
+    if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
       throw new RangeError(`cell (${row}, ${col}) is outside the ${this.height}x${this.width} grid`);
     }
-    return cell;
   }
 }
 

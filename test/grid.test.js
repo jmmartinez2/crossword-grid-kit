@@ -135,6 +135,14 @@ test('solutionMismatches rejects an answer key of the wrong size', () => {
   assert.throws(() => grid.solutionMismatches(wrongSize), RangeError);
 });
 
+test('isBlock, letterAt, and numberAt all reject out-of-bounds coordinates', () => {
+  const grid = parseGrid(SAMPLE);
+  assert.throws(() => grid.isBlock(5, 0), RangeError);
+  assert.throws(() => grid.letterAt(0, 5), RangeError);
+  assert.throws(() => grid.numberAt(-1, 0), RangeError);
+  assert.throws(() => grid.numberAt(0, 5), RangeError);
+});
+
 test('rejects an unexpected character with line and column', () => {
   const err = captureError(() => parseGrid('..#..\n.....\n#..x#'));
   assert.ok(err instanceof CrosswordSyntaxError);
